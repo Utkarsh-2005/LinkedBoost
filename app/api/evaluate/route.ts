@@ -21,34 +21,46 @@ const generationConfig = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { profileData } = await req.json();
+    const { profileData, postsData } = await req.json();
 
     if (!profileData) {
       return NextResponse.json({ error: "No profile data provided" }, { status: 400 });
     }
 
-    // Construct the prompt to ask for both the overall score and remark
+    // Construct the prompt to ask for overall evaluation including posts
     const prompt = `
-      Evaluate the following LinkedIn profile based on completeness and professionalism.
+      Evaluate the following LinkedIn profile based on completeness, professionalism, and content engagement.
       Provide an overallScore (out of 100), an overallRemark, and sub-scores (out of 10) for:
       - Headline
       - Summary
       - Experience
       - Education
       - Other
-    
-      Return the response as a valid JSON object with this structure:
+      - Posts (based on engagement, clarity, and relevance)
+      
+      Additionally, for the "Posts" section, include an array of the top 3 most engaging posts with a short description.
+      Format the response as a valid JSON object with this structure:
       {
-        "overallScore": number,
+        "overallScore": number (Score out of 100 on the basis of the overall profile evaluation),
         "overallRemark": string,
         "Headline": { "text": string (reviews and fixes), "score": number },
         "Summary": { "text": string (reviews and fixes), "score": number },
         "Experience": { "text": string (reviews and fixes), "score": number },
         "Education": { "text": string (reviews and fixes), "score": number },
-        "Other": { "text": string (reviews and fixes), "score": number }
+        "Other": { "text": string (reviews and fixes), "score": number },
+        "Posts": {
+          "text": string (reviews and fixes),
+          "score": number,
+          "topPosts": [
+            "Your post about ...",
+            "Your post about ...",
+            "Your post about ..."
+          ]
+        }
       }
 
       Profile Data: ${JSON.stringify(profileData)}
+      Posts Data: ${JSON.stringify(postsData || [])}
     `;
 
     // Start chat session with model

@@ -11,8 +11,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing profile URL" }, { status: 400 });
     }
 
+    // Extract username from LinkedIn profile URL
+    const match = profileUrl.match(/linkedin\.com\/in\/([^\/?]+)/);
+    const username = match ? match[1] : null;
+
+    if (!username) {
+      return NextResponse.json({ error: "Invalid LinkedIn profile URL" }, { status: 400 });
+    }
+
+    // Fetch profile data
     const encodedUrl = encodeURIComponent(profileUrl);
-    const response = await fetch(
+    const profileResponse = await fetch(
       `https://${RAPIDAPI_HOST}/get-profile-data-by-url?url=${encodedUrl}`,
       {
         method: "GET",
@@ -23,12 +32,31 @@ export async function POST(req: Request) {
       }
     );
 
-    if (!response.ok) {
-      throw new Error(`LinkedIn API Error: ${response.statusText}`);
+    if (!profileResponse.ok) {
+      throw new Error(`LinkedIn API Error: ${profileResponse.statusText}`);
     }
 
-    const data = await response.json();
-    return NextResponse.json({ profileData: data });
+    const profileData = await profileResponse.json();
+
+    // Fetch user's posts using extracted username
+    const postsResponse = await fetch(
+      `https://${RAPIDAPI_HOST}/get-profile-posts?username=${username}`,
+      {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": RAPIDAPI_KEY || "",
+          "x-rapidapi-host": RAPIDAPI_HOST,
+        },
+      }
+    );
+
+    if (!postsResponse.ok) {
+      throw new Error(`LinkedIn Posts API Error: ${postsResponse.statusText}`);
+    }
+
+    const postsData = await postsResponse.json();
+
+    return NextResponse.json({ profileData, postsData });
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }

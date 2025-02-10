@@ -12,7 +12,6 @@ import {
   LinearScale,
 } from "chart.js";
 
-// Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, Title, CategoryScale, LinearScale);
 
 interface ProfileData {
@@ -21,6 +20,14 @@ interface ProfileData {
   headline?: string;
   geo?: { full: string };
   profilePicture?: string;
+}
+
+interface Post {
+  id: string;
+  text: string;
+  likes: number;
+  comments: number;
+  shares: number;
 }
 
 interface EvaluationCategory {
@@ -36,6 +43,7 @@ interface Evaluation {
   Experience: EvaluationCategory;
   Education: EvaluationCategory;
   Other: EvaluationCategory;
+  Posts: { text: string; score: number; topPosts: string[] };
 }
 
 interface Particle {
@@ -47,12 +55,12 @@ interface Particle {
 export default function Home() {
   const [profileUrl, setProfileUrl] = useState("");
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [postsData, setPostsData] = useState<Post[] | null>(null);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [particles, setParticles] = useState<Particle[]>([]);
 
-  // Generate particle positions only on the client
   useEffect(() => {
     const particleArray = Array.from({ length: 12 }, (_, i) => ({
       top: `${Math.random() * 100}%`,
@@ -71,6 +79,7 @@ export default function Home() {
     setLoading(true);
     setError("");
     setProfileData(null);
+    setPostsData(null);
     setEvaluation(null);
 
     try {
@@ -84,11 +93,12 @@ export default function Home() {
       if (!profileResponse.ok) throw new Error(profileResult.error || "Failed to fetch profile data");
 
       setProfileData(profileResult.profileData);
+      setPostsData(profileResult.postsData);
 
       const evaluationResponse = await fetch("/api/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profileData: profileResult.profileData }),
+        body: JSON.stringify({ profileData: profileResult.profileData, postsData: profileResult.postsData }),
       });
 
       const evaluationResult = await evaluationResponse.json();
@@ -119,7 +129,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-black">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-black to-gray-900 opacity-80 animate-gradient"></div>
 
-        {/* Floating Particles (Only Render on Client) */}
+        {/* Floating Particles */}
         {particles.length > 0 && (
           <div className="absolute inset-0 pointer-events-none">
             {particles.map((particle, i) => (
@@ -143,7 +153,7 @@ export default function Home() {
       {/* Hero Section */}
       <motion.section initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="text-center py-20 relative z-10">
         <h1 className="text-5xl font-extrabold tracking-wide text-blue-400">LinkedIn Profile Evaluator</h1>
-        <p className="text-lg text-gray-300 mt-3">Get AI-powered insights on your LinkedIn profile and improve your visibility.</p>
+        <p className="text-lg text-gray-300 mt-3">Get AI-powered insights on your LinkedIn profile and posts.</p>
       </motion.section>
 
       {/* Evaluator Card */}
@@ -180,17 +190,24 @@ export default function Home() {
                     <Doughnut data={generateChartData(category.score, 10, "#4caf50")} />
                   </div>
                   <p className="text-gray-300 mt-2">{category.text}</p>
+
+                  {key === "Posts" && evaluation.Posts.topPosts.length > 0 && (
+                    <div className="mt-4 text-left">
+                      <h5 className="font-semibold text-white">Top 3 Posts:</h5>
+                      <ul className="text-gray-300 list-disc pl-4">
+                        {evaluation.Posts.topPosts.map((post, index) => (
+                          <li key={index}>{post}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                 </div>
               );
             })}
           </div>
         </motion.div>
       )}
-
-      {/* "Made by Utkarsh" */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.5 }} className="absolute bottom-5 text-gray-400 text-sm">
-        Made by <span className="text-blue-400 font-bold">Utkarsh</span> 
-      </motion.div>
     </div>
   );
 }
