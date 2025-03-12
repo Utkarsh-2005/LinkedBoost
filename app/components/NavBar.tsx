@@ -43,9 +43,9 @@ export default function NavBar() {
   return (
     <nav className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-900 to-purple-800 text-white shadow-lg sticky top-0 z-50">
       {/* Left side (Logo/App Name) */}
-      <Link href="/">
+      <a href="/">
         <div className="text-2xl font-extrabold">Linked Boost</div>
-      </Link>
+      </a>
 
       {/* Right side (Session buttons and credits) */}
       <div className="flex items-center space-x-6">

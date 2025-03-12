@@ -197,7 +197,7 @@ export default function Home() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen text-white overflow-hidden relative">
+    <div className="flex flex-col min-h-screen text-white overflow-hidden relative select-none">
       <Toaster />
       {/* Animated Background */}
       <div className="absolute inset-0 bg-black pointer-events-none">
@@ -289,7 +289,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           whileHover={{ scale: 1.05 }}  // This increases the size by 5% on hover
           transition={{ duration: 0.3 }}
-          className="mt-6 w-full sm:max-w-lg mx-auto p-6 bg-gray-800 rounded-lg text-center px-4 cursor-pointer select-none"
+          className="mt-6 w-full sm:max-w-lg mx-auto p-6 bg-gray-800 rounded-lg text-center px-4 cursor-pointer"
         >
           {profileData.profilePicture && (
             <img
@@ -312,7 +312,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1 }}
-            className="mt-10 w-full sm:max-w-lg mx-auto p-6 bg-gray-800 rounded-lg px-4"
+            className="mt-10 w-full sm:max-w-lg mx-auto p-6 bg-gray-800 rounded-lg px-4 select-text"
           >
             {/* Overall Score Section */}
             <section className="text-center mb-6">
