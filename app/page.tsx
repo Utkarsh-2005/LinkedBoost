@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import "./page.css"
 import { Toaster, toast } from "react-hot-toast";
 import { Doughnut } from "react-chartjs-2";
 import { motion, AnimatePresence } from "framer-motion";
@@ -219,13 +220,13 @@ export default function Home() {
       </div>
 
       {/* Main Content Wrapper */}
-      <div className="flex-grow relative z-10">
+      <div className="flex-grow relative z-10 justify-center items-center">
         {/* Hero Section */}
         <motion.section
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
-          className="text-center py-20 px-4"
+          className="text-center py-16 px-4 flex flex-col items-center"
         >
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-wide text-blue-400">
             LinkedIn Profile Evaluator
@@ -233,6 +234,18 @@ export default function Home() {
           <p className="text-base sm:text-lg text-gray-300 mt-3">
             Get AI-powered insights on your LinkedIn profile and posts.
           </p>
+          <div className="container">
+      <motion.div
+        className="aurora-text mt-[2.5px]"
+        data-text="Enhanced With RAG"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, ease: "easeOut" }}
+      >
+        Enhanced With RAG
+      </motion.div>
+    </div>
+
         </motion.section>
 
         {/* Evaluator Card */}
