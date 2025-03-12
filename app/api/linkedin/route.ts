@@ -12,6 +12,13 @@ export async function POST(req: Request) {
     }
 
     // Extract username from LinkedIn profile URL
+    const regex = /^(https:\/\/(?:www\.)?linkedin\.com\/in\/[^\/\?]+)/;
+    const short = profileUrl.match(regex);
+    const cleanedUrl = short ? short[1] : null;
+    console.log("Cleaned URL:-", cleanedUrl);
+    if (!cleanedUrl) {
+      return NextResponse.json({ error: "Invalid LinkedIn profile URL" }, { status: 400 });
+    }
     const match = profileUrl.match(/linkedin\.com\/in\/([^\/?]+)/);
     const username = match ? match[1] : null;
 
@@ -20,7 +27,7 @@ export async function POST(req: Request) {
     }
 
     // Fetch profile data
-    const encodedUrl = encodeURIComponent(profileUrl);
+    const encodedUrl = encodeURIComponent(cleanedUrl);
     const profileResponse = await fetch(
       `https://${RAPIDAPI_HOST}/get-profile-data-by-url?url=${encodedUrl}`,
       {
