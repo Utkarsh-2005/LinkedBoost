@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { Doughnut } from "react-chartjs-2";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,18 +26,11 @@ interface ProfileData {
   geo?: { full: string };
   profilePicture?: string;
   fullPositions?: { companyName: string; companyURL?: string; companyLogo?: string }[];
-  educations?: { fieldOfStudy?: string; degree?: string; start?: any; end?: any }[];
+  educations?: { fieldOfStudy?: string; degree?: string; start?: unknown; end?: unknown }[];
   skills?: { name: string; passedSkillAssessment: boolean }[];
   certifications?: { name: string; authority?: string }[];
 }
 
-interface Post {
-  id: string;
-  text: string;
-  likes: number;
-  comments: number;
-  shares: number;
-}
 
 interface EvaluationCategory {
   text: string;
