@@ -38,7 +38,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Use a shortened version of the profile data to ensure input length is within limits.
 
     const chatSession = model.startChat({ generationConfig, history: [] });
-    const fix_prompt = `Give the one main section of this profile that needs the most improvement among these: (Headline, Summary, Experience, Education, Posts) Only One word response is required!`;
+    const fix_prompt = `Give the one main section of this profile that needs the most improvement among these: (Headline, Summary, Experience, Education, Posts) Only One word response is required!  Profile to Evaluate:
+      ${JSON.stringify(profileData)}`;
     const result2 = await chatSession.sendMessage(fix_prompt);
     const issue_section = result2.response.text();
     console.log("Issue Section:-", issue_section);
