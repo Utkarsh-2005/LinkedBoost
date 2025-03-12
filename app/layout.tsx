@@ -1,34 +1,30 @@
+// app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import SessionProvider from "./components/SessionProvider";
+import Navbar from "./components/NavBar";
+import { CreditsProvider } from "@/app/contexts/CreditsContext";
 
 export const metadata: Metadata = {
-  title: "LinekdIn Profile Evaluator",
-  description: "Generated your profile review",
+  title: "LinkedIn Profile Evaluator",
+  description: "Generate your profile review",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <SessionProvider>
+        <CreditsProvider>
+          <body>
+            <Navbar />
+            {children}
+          </body>
+        </CreditsProvider>
+      </SessionProvider>
     </html>
   );
 }
