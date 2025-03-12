@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOption } from "@/app/api/auth/[...nextauth]/route";
 import {prisma} from "@/lib/prisma";
 
-export async function POST(request: Request) {
+export async function POST() {
   // Get the session from the server side
   const session = await getServerSession(authOption);
   if (!session || !session.user?.email) {

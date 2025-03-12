@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/astraClient";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     console.log("📡 Connecting to AstraDB...");
 

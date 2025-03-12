@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { Doughnut } from "react-chartjs-2";
 import { motion, AnimatePresence } from "framer-motion";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Footer from "./components/Footer";
 import {
   Chart as ChartJS,
@@ -64,7 +64,7 @@ interface Particle {
 export default function Home() {
   const [profileUrl, setProfileUrl] = useState("");
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [postsData, setPostsData] = useState<Post[] | null>(null);
+  // const [postsData, setPostsData] = useState<Post[] | null>(null);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -72,9 +72,6 @@ export default function Home() {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [loadingText, setLoadingText] = useState("Getting your data");
   const { data: session } = useSession();
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef(null);
-  const profileImgRef = useRef(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const { credits, fetchCredits } = useCredits();
   // Create floating particles on mount
@@ -129,14 +126,14 @@ export default function Home() {
         return;
       }
     } catch (err) {
-      setError("Error checking credits.");
+      setError("Error checking credits. "+err);
       return;
     }
 
     setLoading(true);
     setError("");
     setProfileData(null);
-    setPostsData(null);
+    // setPostsData(null);
     setEvaluation(null);
 
     try {
@@ -151,7 +148,7 @@ export default function Home() {
         throw new Error(profileResult.error || "Failed to fetch profile data");
 
       setProfileData(profileResult.profileData);
-      setPostsData(profileResult.postsData);
+      // setPostsData(profileResult.postsData);
 
       // Step 2: Evaluate the profile using both profileData and postsData
       const evaluationResponse = await fetch("/api/evaluate", {

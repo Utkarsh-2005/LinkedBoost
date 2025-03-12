@@ -22,8 +22,8 @@ const generationConfig = {
 };
 
 interface EvaluationRequestBody {
-  profileData: Record<string, any>;
-  postsData?: Record<string, any>[];
+  profileData: Record<string, unknown>;
+  postsData?: Record<string, unknown>[];
 }
 
 
