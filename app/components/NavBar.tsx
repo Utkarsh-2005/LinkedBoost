@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import Link from "next/link";
 import Image from "next/image";
 import { useCredits } from "@/app/contexts/CreditsContext";
 
@@ -43,16 +42,16 @@ export default function NavBar() {
   return (
     <nav className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-900 to-purple-800 text-white shadow-lg sticky top-0 z-50">
       {/* Left side (Logo/App Name) */}
-      <Link href="/">
-        <div className="text-2xl font-extrabold">Linked Boost</div>
-      </Link>
-
+      <a href="/">
+        <div className="sm:text-2xl font-extrabold text-xl">Linked Boost</div>
+      </a>
+      
       {/* Right side (Session buttons and credits) */}
-      <div className="flex items-center space-x-6">
+      <div className="flex flex-col items-center space-x-6">
         {session ? (
-          <div className="flex items-center space-x-4">
+          <div className="sm:flex items-center space-x-4">
             {/* Credits display (hidden on very small screens) */}
-            <div className="hidden sm:flex items-center space-x-1">
+            <div className="sm:flex items-center justify-center space-x-1 sm:mb-0 mb-2">
               <span className="text-lg">Credits:</span>
               <span className="font-semibold text-lg">
                 {credits !== null ? credits : "Loading..."}
