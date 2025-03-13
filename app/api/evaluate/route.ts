@@ -42,7 +42,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       ${JSON.stringify(profileData)}`;
     const result2 = await chatSession.sendMessage(fix_prompt);
     const issue_section = result2.response.text();
-    console.log("Issue Section:-", issue_section);
+    // console.log("Issue Section:-", issue_section);
     const searchResults = await collection.find(
       {},
       {
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         projection: { $vectorize: 1 } 
       }
     ).toArray();
-    console.log("Search Results:-", searchResults);
+    // console.log("Search Results:-", searchResults);
     const rag = JSON.stringify(searchResults.map((doc) => {
       return {
         text: doc.$vectorize || "No text available",
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       ${JSON.stringify(postsData || [])}
     `;
 
-    console.log("Enhanced Prompt:", prompt);
+    // console.log("Enhanced Prompt:", prompt);
     // **Step 4: Generate Evaluation with Gemini**
     const result = await chatSession.sendMessage(prompt);
     const responseText = result.response.text();

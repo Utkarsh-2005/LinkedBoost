@@ -90,7 +90,7 @@ export default function NavBar() {
           </div>
         ) : (
           <button
-            className="flex items-center gap-2 px-4 py-2 border border-white rounded-lg hover:bg-white hover:text-blue-700 transition duration-150"
+            className="flex items-center gap-2 px-4 py-2 border border-white rounded-lg hover:bg-white hover:text-blue-700 transition duration-150 pl-2"
             onClick={() => signIn("google")}
           >
             <Image

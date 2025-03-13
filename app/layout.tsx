@@ -6,8 +6,8 @@ import Navbar from "./components/NavBar";
 import { CreditsProvider } from "@/app/contexts/CreditsContext";
 
 export const metadata: Metadata = {
-  title: "LinkedIn Profile Evaluator",
-  description: "Generate your profile review",
+  title: "LinkedBoost",
+  description: "Evaluate your LinkedIn profile",
 };
 
 export default function RootLayout({

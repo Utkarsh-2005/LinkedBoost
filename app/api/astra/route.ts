@@ -3,18 +3,18 @@ import { db } from "@/lib/astraClient";
 
 export async function GET() {
   try {
-    console.log("📡 Connecting to AstraDB...");
+    // console.log("📡 Connecting to AstraDB...");
 
     // Retrieve the collection name and collection instance
     const collectionName = process.env.ASTRA_DB_COLLECTION!;
     const collection = db.collection(collectionName);
 
     // Log the collection object for debugging purposes
-    console.log("📚 Collection Object:", collection);
+    // console.log("📚 Collection Object:", collection);
 
     // Verify connection by listing collections
     const collections = await db.listCollections();
-    console.log("✅ Connected to AstraDB:", collections.map(c => c.name || c));
+    // console.log("✅ Connected to AstraDB:", collections.map(c => c.name || c));
 
     // Ensure the target collection exists
     if (!collection) {
@@ -23,7 +23,7 @@ export async function GET() {
         { status: 500 }
       );
     }
-    console.log(`📂 Using collection: ${collectionName}`);
+    // console.log(`📂 Using collection: ${collectionName}`);
 
     // Execute the vector search query
     const cursor = collection.find(
@@ -45,7 +45,7 @@ export async function GET() {
       });
     }
 
-    console.log("🔹 Vector Search Results:", searchResults);
+    // console.log("🔹 Vector Search Results:", searchResults);
 
     if (searchResults.length === 0) {
       return NextResponse.json(
