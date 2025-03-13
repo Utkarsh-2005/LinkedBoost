@@ -228,7 +228,7 @@ export default function Home() {
           transition={{ duration: 1 }}
           className="text-center py-16 px-4 flex flex-col items-center"
         >
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-wide text-blue-400">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-wide text-blue-400">
             LinkedIn Profile Evaluator
           </h1>
           <p className="text-base sm:text-lg text-gray-300 mt-3">

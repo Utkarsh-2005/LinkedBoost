@@ -1,7 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=swap");
 
 :root {
-  --fs: clamp(2rem, 2.7vw, 2.7rem);
+  --fs: clamp(2rem, 2.7vw, 2.7rem); /* Smallest: 1.5rem | Grows with viewport */
+}
+
+/* Adjust the font size for larger screens */
+@media screen and (max-width: 600px) {
+  :root {
+    --fs: clamp(1.4rem, 2vw, 2.5rem); /* Adjusts dynamically */
+  }
 }
 
 body {
