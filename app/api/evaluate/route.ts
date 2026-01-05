@@ -11,7 +11,7 @@ if (!apiKey) {
   throw new Error("Missing GEMINI_API_KEY environment variable");
 }
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
 const generationConfig = {
   temperature: 1,
@@ -26,6 +26,7 @@ interface EvaluationRequestBody {
   postsData?: Record<string, unknown>[];
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -102,6 +103,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // console.log("Enhanced Prompt:", prompt);
     // **Step 4: Generate Evaluation with Gemini**
+    await sleep(5000);
     const result = await chatSession.sendMessage(prompt);
     const responseText = result.response.text();
 

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
-const RAPIDAPI_HOST = "linkedin-data-api.p.rapidapi.com";
+// New RapidAPI host
+const RAPIDAPI_HOST = "fresh-linkedin-profile-data.p.rapidapi.com";
+
+// Simple delay utility to throttle sequential requests
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Helper function that cycles through an array of keys
 async function fetchWithFallback(url: string, options: RequestInit = {}) {
@@ -13,21 +17,35 @@ async function fetchWithFallback(url: string, options: RequestInit = {}) {
 
   let lastError: Error | null = null;
   for (const key of keys) {
-    // Set headers for each attempt
+    // Prepare headers for each attempt
     options.headers = {
       ...options.headers,
       "x-rapidapi-key": key || "",
       "x-rapidapi-host": RAPIDAPI_HOST,
+      Accept: "application/json",
     };
+    // Avoid caching on server runtime
+    options.cache = "no-store";
 
-    const response = await fetch(url, options);
-    if (response.ok) {
-      return response;
-    } else {
-      // Log the failure and try the next key
-      console.log(`Key failed with status ${response.status}`);
-      const errorText = await response.text();
-      lastError = new Error(`API request failed with status ${response.status}: ${errorText}`);
+    // Try up to 2 attempts per key for transient errors
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const response = await fetch(url, options);
+      if (response.ok) {
+        return response;
+      } else {
+        const errorText = await response.text();
+        console.log(
+          `[RapidAPI] Host=${RAPIDAPI_HOST} URL=${url} KeyAttempt=${attempt} Status=${response.status} Body=${errorText?.slice(0, 160)}`
+        );
+        lastError = new Error(`API request failed with status ${response.status}: ${errorText}`);
+        // Backoff on rate limit or server errors, then retry once with same key
+        if (response.status === 429 || response.status >= 500) {
+          await sleep(900);
+          continue;
+        }
+        // For non-retriable errors, break and try next key
+        break;
+      }
     }
   }
   // If all keys fail, throw the last encountered error.
@@ -45,7 +63,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       return NextResponse.json({ error: "Missing profile URL" }, { status: 400 });
     }
 
-    // Extract username from LinkedIn profile URL
+    // Extract canonical LinkedIn profile URL (no trailing paths/query)
     const regex = /^(https:\/\/(?:www\.)?linkedin\.com\/in\/[^\/\?]+)/;
     const short = profileUrl.match(regex);
     const cleanedUrl = short ? short[1] : null;
@@ -53,29 +71,52 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (!cleanedUrl) {
       return NextResponse.json({ error: "Invalid LinkedIn profile URL" }, { status: 400 });
     }
-    const match = profileUrl.match(/linkedin\.com\/in\/([^\/?]+)/);
-    const username = match ? match[1] : null;
+    const rawUrl = cleanedUrl;
 
-    if (!username) {
-      return NextResponse.json({ error: "Invalid LinkedIn profile URL" }, { status: 400 });
-    }
-
-    // Fetch profile data
-    const encodedUrl = encodeURIComponent(cleanedUrl);
-    const profileUrlFull = `https://${RAPIDAPI_HOST}/get-profile-data-by-url?url=${encodedUrl}`;
-    const profileResponse = await fetchWithFallback(profileUrlFull, {
-      method: "GET",
+    // New API: Profile enrichment endpoint with optional includes disabled to minimize payload
+    const profileParams = new URLSearchParams({
+      linkedin_url: rawUrl,
+      include_skills: "true",
+      include_certifications: "false",
+      include_publications: "false",
+      include_honors: "false",
+      include_volunteers: "false",
+      include_projects: "false",
+      include_patents: "false",
+      include_courses: "false",
+      include_organizations: "true",
+      include_profile_status: "false",
+      include_company_public_url: "false",
     });
-    const profileData = await profileResponse.json();
+    const profileUrlFull = `https://${RAPIDAPI_HOST}/enrich-lead?${profileParams.toString()}`;
+    const profileResponse = await fetchWithFallback(profileUrlFull, { method: "GET" });
+    const profileJson = await profileResponse.json();
 
-    // Fetch user's posts using the extracted username
-    const postsUrlFull = `https://${RAPIDAPI_HOST}/get-profile-posts?username=${username}`;
-    const postsResponse = await fetchWithFallback(postsUrlFull, {
-      method: "GET",
-    });
-    const postsData = await postsResponse.json();
+    // Brief delay to avoid hitting rate limits on consecutive calls
+    await sleep(1200);
 
-    return NextResponse.json({ profileData, postsData });
+    // New API: Posts endpoint uses linkedin_url and type=posts
+    const postsParams = new URLSearchParams({ linkedin_url: rawUrl, type: "posts" });
+    const postsUrlFull = `https://${RAPIDAPI_HOST}/get-profile-posts?${postsParams.toString()}`;
+    const postsResponse = await fetchWithFallback(postsUrlFull, { method: "GET" });
+    const postsJson = await postsResponse.json();
+
+    // Normalize to the shape the UI expects
+    const data = profileJson?.data || {};
+    const location = data?.location || [data?.city, data?.country].filter(Boolean).join(", ") || "";
+    const cleanProfileData = {
+      profilePicture: data?.profile_image_url || null,
+      firstName: data?.first_name || "",
+      lastName: data?.last_name || "",
+      headline: data?.headline || "",
+      geo: location ? { full: location } : undefined,
+      // Preserve original for downstream evaluation if needed
+      _raw: profileJson,
+    } as Record<string, unknown>;
+
+    const postsData = Array.isArray(postsJson?.data) ? postsJson.data : [];
+
+    return NextResponse.json({ profileData: cleanProfileData, postsData });
   } catch (error) {
     console.error("Error in API:", error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
