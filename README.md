@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LinkedBoost - Documentation
 
-## Getting Started
+## Project Overview
 
-First, run the development server:
+**LinkedBoost** is an AI-powered LinkedIn profile reviewer application that helps individuals optimize their LinkedIn profiles. This platform evaluates profiles, providing insights into areas of improvement and assigning scores for various sections, along with an overall score out of 100. It is built using Next.js and leverages TypeScript, Prisma/MongoDB, Redis, and Gemini-powered Retrieval-Augmented Generation (RAG) systems. 
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The application makes your LinkedIn experience much simpler—just paste your LinkedIn profile link, and LinkedBoost generates automated insights and scores for sections like posts, headline, experience, and education. This tool has already been instrumental in enhancing LinkedIn profiles, including the developer's own profile!
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+You can access LinkedBoost live at [linkedboost.vercel.app](https://linkedboost.vercel.app/).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How it Works
 
-## Learn More
+### Workflow
+1. **Profile Data Retrieval**: The application fetches data from a given LinkedIn profile using the RapidAPI-hosted "LinkedIn Profile Data" service.
+2. **Data Enrichment**:
+   - For profile evaluations, GeminiAPI and AstraDB are used in the backend.
+   - A RAG-based approach leverages vectorized data stored in AstraDB to generate enhanced insights dynamically.
+3. **AI Processing**:
+   - Insights are powered and refined using a Generative AI engine by Google (Gemini-model) to provide an in-depth quantitative analysis.
+4. **Evaluation**:
+   - Profile sections are broken down and analyzed, generating scores for each of the following:
+     - Headline
+     - Education
+     - Experience
+     - Summary
+     - Posts
+5. **Actionable Report**:
+   - Results are delivered as JSON, including AI-suggested optimizations for major profile weaknesses and social media engagement improvements.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Technology Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Frontend
+- **Next.js**: Responsible for rendering and page management within the React framework.
+- **TypeScript**: Provides robust type-checking for better code quality during development.
+- **Tailwind CSS**: Framework for creating modern, responsive designs.
 
-## Deploy on Vercel
+### Backend
+- **Prisma/MongoDB**: Database access layer to store user details and their profile scores.
+- **Redis**: State widget or caching server for dynamically delivering real-time results more efficiently.
+- **Gemini-powered AI**:
+   - Google Generative AI serves as the evaluation and analysis component seamlessly integrated with insights designed tailored LinkedIn Reviewer input.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Features
+
+1. **LinkedIn Profile Review**:
+   - Parses and evaluates LinkedIn profiles.
+   - Assigns detailed scores for specific segments of a professional’s public portfolios (Headline Posts networking).
+
+  Summarised breakdowns summarized meaningful conversational-side impact responded comparing headlined weak impact summary effectively attended distributed-building
