@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/astraClient";
 
-const collectionName = process.env.ASTRA_DB_COLLECTION!; // Ensure this is set in your .env file.
+const collectionName = process.env.ASTRA_DB_COLLECTION!; 
 const collection = db.collection(collectionName);
 
-// Initialize Gemini AI
+
 const apiKey = process.env.GEMINI_API_KEY!;
 if (!apiKey) {
   throw new Error("Missing GEMINI_API_KEY environment variable");
@@ -35,9 +35,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "No profile data provided" }, { status: 400 });
     }
 
-    // **Step 2: Retrieve Relevant Profiles from Astra DB**
-    // Use a shortened version of the profile data to ensure input length is within limits.
-
     const chatSession = model.startChat({ generationConfig, history: [] });
     const fix_prompt = `Give the one main section of this profile that needs the most improvement among these: (Headline, Summary, Experience, Education, Posts) Only One word response is required!  Profile to Evaluate:
       ${JSON.stringify(profileData)}`;
@@ -59,7 +56,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         text: doc.$vectorize || "No text available",
         similarity: doc.$similarity || 0,
       }}));
-   // **Step 3: Construct Enhanced Prompt**
+    
     const prompt = `
       Evaluate the following LinkedIn profile based on completeness, professionalism, and engagement.
       Provide an overallScore (out of 100, with critical feedback), an overallRemark, and sub-scores (out of 10) for:
@@ -102,15 +99,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     `;
 
     // console.log("Enhanced Prompt:", prompt);
-    // **Step 4: Generate Evaluation with Gemini**
     await sleep(5000);
     const result = await chatSession.sendMessage(prompt);
     const responseText = result.response.text();
 
     // console.log("Gemini Raw Response:", responseText);
     // console.log("Search Results:-", searchResults);
-  
-    // **Step 5: Parse Response**
     let evaluation;
     try {
       const match = responseText.match(/{.*}/s);
@@ -118,7 +112,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       evaluation = JSON.parse(match[0]);
     } catch (error) {
       console.error("JSON Parse Error:", error, "Response Text:", responseText);
-      evaluation = responseText; // Fallback to raw text if JSON parsing fails.
+      evaluation = responseText;
     }
 
     return NextResponse.json({ evaluation }, { status: 200 });
