@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/astraClient";
 
-const collectionName = process.env.ASTRA_DB_COLLECTION!; // Ensure this is set in your .env file.
+const collectionName = process.env.ASTRA_DB_COLLECTION!; 
 const collection = db.collection(collectionName);
 
-// Initialize Gemini AI
+
 const apiKey = process.env.GEMINI_API_KEY!;
 if (!apiKey) {
   throw new Error("Missing GEMINI_API_KEY environment variable");
@@ -65,11 +65,11 @@ Profile: ${JSON.stringify(profileData).slice(0, 500)}`;
         })));
       })();
 
-      const timeoutPromise = new Promise((_, reject) =>
+      const timeoutPromise = new Promise<string>((_, reject) =>
         setTimeout(() => reject(new Error("RAG operation timeout")), 10000)
       );
 
-      rag = await Promise.race([ragPromise, timeoutPromise]);
+      rag = await Promise.race<string>([ragPromise, timeoutPromise]);
     } catch (ragError) {
       console.warn("RAG lookup failed, continuing without context:", ragError);
       rag = "[]";
