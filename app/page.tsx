@@ -155,7 +155,7 @@ export default function Home() {
       });
       const evaluationResult = await evaluationResponse.json();
       if (!evaluationResponse.ok || !evaluationResult.evaluation)
-        throw new Error(evaluationResult.error || "Failed to evaluate profile");
+        throw new Error(evaluationResult.error || "Failed to evaluate profile. Please try again.");
 
       setEvaluation(evaluationResult.evaluation);
 

@@ -35,31 +35,46 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "No profile data provided" }, { status: 400 });
     }
 
-    // **Step 2: Retrieve Relevant Profiles from Astra DB**
+    // **Step 2: Retrieve Relevant Profiles from Astra DB (with timeout)**
     // Use a shortened version of the profile data to ensure input length is within limits.
 
     const chatSession = model.startChat({ generationConfig, history: [] });
-    const fix_prompt = `Give the one main section of this profile that needs the most improvement among these: (Headline, Summary, Experience, Education, Posts) Only One word response is required!  Profile to Evaluate:
-      ${JSON.stringify(profileData)}`;
-    const result2 = await chatSession.sendMessage(fix_prompt);
-    const issue_section = result2.response.text();
-    // console.log("Issue Section:-", issue_section);
-    const searchResults = await collection.find(
-      {},
-      {
-        sort: { $vectorize: issue_section },
-        limit: 3,
-        includeSimilarity: true,
-        projection: { $vectorize: 1 } 
-      }
-    ).toArray();
-    // console.log("Search Results:-", searchResults);
-    const rag = JSON.stringify(searchResults.map((doc) => {
-      return {
-        text: doc.$vectorize || "No text available",
-        similarity: doc.$similarity || 0,
-      }}));
-   // **Step 3: Construct Enhanced Prompt**
+    
+    let rag = "";
+    try {
+      // Set a 10-second timeout for the entire RAG operation
+      const ragPromise = (async () => {
+        const fix_prompt = `Identify the main section needing improvement (Headline, Summary, Experience, Education, or Posts). Response: one word only.
+Profile: ${JSON.stringify(profileData).slice(0, 500)}`;
+        const result2 = await chatSession.sendMessage(fix_prompt);
+        const issue_section = result2.response.text().trim();
+        
+        const searchResults = await collection.find(
+          {},
+          {
+            sort: { $vectorize: issue_section },
+            limit: 3,
+            includeSimilarity: true,
+            projection: { $vectorize: 1 } 
+          }
+        ).toArray();
+        
+        return JSON.stringify(searchResults.map((doc) => ({
+          text: doc.$vectorize || "No text available",
+          similarity: doc.$similarity || 0,
+        })));
+      })();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("RAG operation timeout")), 10000)
+      );
+
+      rag = await Promise.race([ragPromise, timeoutPromise]);
+    } catch (ragError) {
+      console.warn("RAG lookup failed, continuing without context:", ragError);
+      rag = "[]";
+    }
+    // **Step 3: Construct Enhanced Prompt**
     const prompt = `
       Evaluate the following LinkedIn profile based on completeness, professionalism, and engagement.
       Provide an overallScore (out of 100, with critical feedback), an overallRemark, and sub-scores (out of 10) for:
@@ -91,7 +106,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         }
       }
 
-      Use this additonal context in your "overallRemark":
+      Use this additional context in your "overallRemark":
       ${rag}
 
       Profile to Evaluate:
@@ -101,15 +116,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       ${JSON.stringify(postsData || [])}
     `;
 
-    // console.log("Enhanced Prompt:", prompt);
-    // **Step 4: Generate Evaluation with Gemini**
-    await sleep(5000);
-    const result = await chatSession.sendMessage(prompt);
-    const responseText = result.response.text();
+    // **Step 4: Generate Evaluation with Gemini (with timeout)**
+    let responseText: string;
+    try {
+      const evalPromise = chatSession.sendMessage(prompt);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Gemini evaluation timeout after 45 seconds")), 45000)
+      );
+      const result = await Promise.race([evalPromise, timeoutPromise]);
+      responseText = result.response.text();
+    } catch (timeoutError) {
+      console.error("Gemini call timeout:", timeoutError);
+      throw new Error("Profile evaluation took too long. Please try again.");
+    }
 
-    // console.log("Gemini Raw Response:", responseText);
-    // console.log("Search Results:-", searchResults);
-  
     // **Step 5: Parse Response**
     let evaluation;
     try {
@@ -118,7 +138,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       evaluation = JSON.parse(match[0]);
     } catch (error) {
       console.error("JSON Parse Error:", error, "Response Text:", responseText);
-      evaluation = responseText; // Fallback to raw text if JSON parsing fails.
+      throw new Error("Failed to parse evaluation response");
     }
 
     return NextResponse.json({ evaluation }, { status: 200 });
